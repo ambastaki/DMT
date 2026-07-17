@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engineering Firm Assessment Helper</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 760px; line-height: 1.4; padding: 0 1rem; }
+    h1 { margin-bottom: 0.25rem; }
+    .muted { color: #666; margin-top: 0; }
+    fieldset { margin-top: 1rem; border-radius: 6px; }
+    .row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; align-items: center; margin: 0.75rem 0; }
+    label { font-weight: 600; }
+    input[type="text"], input[type="url"] { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+    input[type="range"] { width: 180px; }
+    button { margin-top: 1rem; padding: 0.6rem 0.9rem; cursor: pointer; }
+    #result { margin-top: 1rem; padding: 0.75rem; border: 1px solid #aaa; border-radius: 6px; }
+    .score { font-size: 1.1rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Engineering Firm Assessment Helper</h1>
+  <p class="muted">
+    Use this helper alongside
+    <a href="https://pages.dmt.gov.ae/en/engineering-firms-inquiry" target="_blank" rel="noopener noreferrer">DMT Engineering Firms Inquiry</a>.
+  </p>
+
+  <form id="assessment-form">
+    <div class="row">
+      <label for="firm-name">Firm name</label>
+      <input id="firm-name" name="firmName" type="text" placeholder="Enter firm name" required>
+    </div>
+    <div class="row">
+      <label for="firm-link">Inquiry page or profile link (optional)</label>
+      <input id="firm-link" name="firmLink" type="url" placeholder="https://pages.dmt.gov.ae/en/engineering-firms-inquiry">
+    </div>
+
+    <fieldset>
+      <legend>Score each criterion from 1 to 5</legend>
+      <div class="row">
+        <label for="experience">Years of relevant experience (Weight 25%)</label>
+        <input id="experience" name="experience" type="range" min="1" max="5" value="3">
+      </div>
+      <div class="row">
+        <label for="specialization">Specialization fit (Weight 20%)</label>
+        <input id="specialization" name="specialization" type="range" min="1" max="5" value="3">
+      </div>
+      <div class="row">
+        <label for="compliance">Regulatory compliance history (Weight 25%)</label>
+        <input id="compliance" name="compliance" type="range" min="1" max="5" value="3">
+      </div>
+      <div class="row">
+        <label for="delivery">Delivery track record (Weight 20%)</label>
+        <input id="delivery" name="delivery" type="range" min="1" max="5" value="3">
+      </div>
+      <div class="row">
+        <label for="communication">Communication and responsiveness (Weight 10%)</label>
+        <input id="communication" name="communication" type="range" min="1" max="5" value="3">
+      </div>
+    </fieldset>
+
+    <button type="submit">Calculate Assessment</button>
+  </form>
+
+  <section id="result" aria-live="polite" hidden></section>
+
+  <script>
+    const weights = {
+      experience: 0.25,
+      specialization: 0.20,
+      compliance: 0.25,
+      delivery: 0.20,
+      communication: 0.10
+    };
+
+    function classify(score) {
+      if (score >= 80) return { label: "Strong Candidate", recommendation: "Proceed to detailed due diligence and commercial comparison." };
+      if (score >= 60) return { label: "Moderate Candidate", recommendation: "Consider shortlisting, but validate weak areas before selection." };
+      return { label: "Needs Caution", recommendation: "Do not shortlist until major gaps are resolved." };
+    }
+
+    document.getElementById("assessment-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const firmName = form.firmName.value.trim();
+      const firmLink = form.firmLink.value.trim();
+      const score =
+        Number(form.experience.value) * weights.experience +
+        Number(form.specialization.value) * weights.specialization +
+        Number(form.compliance.value) * weights.compliance +
+        Number(form.delivery.value) * weights.delivery +
+        Number(form.communication.value) * weights.communication;
+
+      const normalized = Math.round((score / 5) * 100);
+      const classification = classify(normalized);
+      const linkText = firmLink ? `<p><strong>Reference:</strong> <a href="${firmLink}" target="_blank" rel="noopener noreferrer">${firmLink}</a></p>` : "";
+      const result = document.getElementById("result");
+
+      result.hidden = false;
+      result.innerHTML = `
+        <p><strong>Firm:</strong> ${firmName}</p>
+        ${linkText}
+        <p class="score">Overall Score: ${normalized}/100</p>
+        <p><strong>Category:</strong> ${classification.label}</p>
+        <p><strong>Recommendation:</strong> ${classification.recommendation}</p>
+      `;
+    });
+  </script>
+</body>
+</html>
